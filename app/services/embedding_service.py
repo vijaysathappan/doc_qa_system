@@ -50,26 +50,49 @@ def get_embeddings_batch(texts: list[str]) -> list[list[float]]:
     if model is not None:
         return model.encode(texts).tolist()
 
-    # Fallback to Hugging Face Inference API
+    # Fallback to Hugging Face Inference API using the official client library
+    from huggingface_hub import InferenceClient
+    
     hf_token = os.getenv("HF_TOKEN")
-    api_url = f"https://api-inference.huggingface.co/models/sentence-transformers/{MODEL_NAME}"
-    headers = {}
-    if hf_token:
-        headers["Authorization"] = f"Bearer {hf_token}"
+    client = InferenceClient(token=hf_token)
+    
+    try:
+        res = client.feature_extraction(
+            model=f"sentence-transformers/{MODEL_NAME}",
+            text=texts
+        )
+        if hasattr(res, "tolist"):
+            return res.tolist()
+        if isinstance(res, list):
+            return res
+        raise Exception(f"Unexpected response type from Hugging Face InferenceClient: {type(res)}")
+    except Exception as e:
+        print(f"huggingface_hub InferenceClient failed: {e}. Trying raw requests fallback...")
+        
+        api_url = f"https://api-inference.huggingface.co/models/sentence-transformers/{MODEL_NAME}"
+        headers = {}
+        if hf_token:
+            headers["Authorization"] = f"Bearer {hf_token}"
 
-    payload = {
-        "inputs": texts,
-        "options": {"wait_for_model": True}
-    }
+        payload = {
+            "inputs": texts,
+            "options": {"wait_for_model": True}
+        }
 
-    response = requests.post(api_url, headers=headers, json=payload, timeout=30)
-    if response.status_code == 200:
-        res_json = response.json()
-        if isinstance(res_json, list):
-            return res_json
-        raise Exception(f"Unexpected response format from Hugging Face: {res_json}")
-    else:
-        raise Exception(f"Hugging Face Inference API failed with code {response.status_code}: {response.text}")
+        try:
+            response = requests.post(api_url, headers=headers, json=payload, timeout=30)
+            if response.status_code == 200:
+                res_json = response.json()
+                if isinstance(res_json, list):
+                    return res_json
+                raise Exception(f"Unexpected response format: {res_json}")
+            else:
+                raise Exception(f"API returned status code {response.status_code}: {response.text}")
+        except Exception as req_err:
+            raise Exception(
+                f"Failed to generate embeddings. HF Client error: {e}. Raw HTTP error: {req_err}. "
+                "Please configure a valid HF_TOKEN in your Vercel environment variables for authenticated access."
+            )
 
 def cosine_similarity(v1, v2):
     """Compute cosine similarity between two vectors."""
