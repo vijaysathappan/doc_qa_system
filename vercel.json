@@ -3,7 +3,12 @@
   "builds": [
     {
       "src": "api/index.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "app/**"
+        ]
+      }
     },
     {
       "src": "frontend/package.json",
@@ -13,6 +18,11 @@
       }
     }
   ],
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "app/**"
+    }
+  },
   "routes": [
     {
       "src": "/api/(.*)",
