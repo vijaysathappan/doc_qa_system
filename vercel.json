@@ -18,11 +18,6 @@
       }
     }
   ],
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "app/**"
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
