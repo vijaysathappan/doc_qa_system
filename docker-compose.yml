@@ -1,0 +1,44 @@
+
+services:
+  # Service 1 — Your FastAPI app
+  app:
+    build: .                        # build from Dockerfile in current directory
+    ports:
+      - "8000:8000"                 # map container port 8000 to your machine port 8000
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/docqa
+      - SECRET_KEY=your-super-secret-key-change-this-in-production
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      - REDIS_URL=redis://redis:6379
+      - HUGGING_FACE_API_KEY=${HUGGINGFACE_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+    volumes:
+      - ./chroma-data:/app/chroma-data   # persist chroma data on host machine
+    depends_on:
+      - db                          # wait for db to start before starting app
+      - redis
+  # Service 2 — PostgreSQL database
+  db:
+    image: postgres:15              # use official postgres image, no Dockerfile needed
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=docqa
+    ports:
+      - "5433:5432"                 # map to 5433 to avoid conflict with your local postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # persist data even if container restarts
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:                    # named volume — Docker manages this

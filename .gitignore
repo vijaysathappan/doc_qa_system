@@ -1,0 +1,42 @@
+# Python virtual envs
+venv/
+.venv/
+env/
+ENV/
+pyvenv.cfg
+
+# Python cached files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local database & embedding models cache
+docqa.db
+model_cache/
+chroma_data/
+uploads/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# IDE configuration files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local environment configuration
+.env
+.env*.local
+
+# Frontend specific overrides
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/yarn-error.log*
+frontend/npm-debug.log*
