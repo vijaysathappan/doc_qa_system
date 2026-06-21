@@ -14,7 +14,11 @@ import hashlib
 router = APIRouter(prefix="/query", tags=["query"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+groq_api_key = os.getenv("GROQ_API_KEY")
+if groq_api_key:
+    groq_client = Groq(api_key=groq_api_key)
+else:
+    groq_client = None
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     payload = decode_token(token)
@@ -39,6 +43,11 @@ async def query_document(
     db: Session = Depends(get_db)
 ):
     """Retrieve relevant chunks and get LLM answer, with caching and token tracking."""
+    if not groq_client:
+        raise HTTPException(
+            status_code=500,
+            detail="GROQ_API_KEY is not configured on the Vercel deployment server."
+        )
 
     cache_key = make_cache_key(req.document_id, req.question)
 

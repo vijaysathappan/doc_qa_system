@@ -4,9 +4,12 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
 load_dotenv()
-SECRET_KEY=os.getenv("SECRET_KEY")
-ALGORITHM=os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES= int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+SECRET_KEY=os.getenv("SECRET_KEY", "fallback-dev-secret-key-change-in-production")
+ALGORITHM=os.getenv("ALGORITHM", "HS256")
+try:
+    ACCESS_TOKEN_EXPIRE_MINUTES= int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
+except Exception:
+    ACCESS_TOKEN_EXPIRE_MINUTES = 1440
 #bcrypt context- used to hash and verify passwords
 pwd_context=CryptContext(schemes=["bcrypt"],deprecated="auto")
 
