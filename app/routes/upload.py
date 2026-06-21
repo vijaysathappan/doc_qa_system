@@ -18,9 +18,13 @@ def get_current_user(token:str= Depends(oauth2_scheme)):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
     return payload
 
-import tempfile
-UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "uploads") if os.getenv("VERCEL") == "1" else "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+UPLOAD_DIR = "uploads"
+try:
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+except OSError:
+    import tempfile
+    UPLOAD_DIR = os.path.join(tempfile.gettempdir(), "uploads")
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("/pdf")
 async def upload_pdf(
     file: UploadFile =File(...),
