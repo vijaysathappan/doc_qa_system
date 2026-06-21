@@ -57,7 +57,8 @@ async def upload_pdf(
                 document_id=doc_id,
                 chunk_text=chunk["chunk_text"],
                 chunk_index=chunk["chunk_index"],
-                page_number=chunk["page_number"]
+                page_number=chunk["page_number"],
+                embedding=chunk.get("embedding")
             )
             db.add(db_chunk)
             db.commit()

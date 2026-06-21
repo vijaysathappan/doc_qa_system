@@ -18,3 +18,4 @@ class DocumentChunk(Base):
     chunk_index=Column(Integer, nullable=False)#position of chunk in doc
     page_number=Column(Integer, nullable=True)# which page it came from
     created_at=Column(String, default=func.now())
+    embedding=Column(JSON, nullable=True) # 384-dimensional float vector

@@ -31,16 +31,39 @@ def get_db():
         db.close()     # always close after request is done
 
 from sqlalchemy import text
+
+def get_table_columns(db, table_name):
+    """Retrieve column names for a table in a database-agnostic way."""
+    if DATABASE_URL and DATABASE_URL.startswith("sqlite"):
+        result = db.execute(text(f"PRAGMA table_info({table_name})"))
+        return [row[1] for row in result.fetchall()]
+    else:
+        result = db.execute(text(
+            f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table_name}'"
+        ))
+        return [row[0] for row in result.fetchall()]
+
 def add_columns_if_missing():
     db = SessionLocal()
     try:
-        result = db.execute(text("PRAGMA table_info(users)"))
-        columns = [row[1] for row in result.fetchall()]
+        columns = get_table_columns(db, "users")
         if "total_tokens_consumed" not in columns:
             db.execute(text("ALTER TABLE users ADD COLUMN total_tokens_consumed INTEGER DEFAULT 0"))
             db.commit()
             print("Successfully added total_tokens_consumed column to users table.")
     except Exception as e:
-        print(f"Error checking/adding column: {e}")
+        print(f"Error checking/adding total_tokens_consumed column: {e}")
+
+    try:
+        columns = get_table_columns(db, "document_chunks")
+        if "embedding" not in columns:
+            if DATABASE_URL and DATABASE_URL.startswith("sqlite"):
+                db.execute(text("ALTER TABLE document_chunks ADD COLUMN embedding TEXT"))
+            else:
+                db.execute(text("ALTER TABLE document_chunks ADD COLUMN embedding JSON"))
+            db.commit()
+            print("Successfully added embedding column to document_chunks table.")
+    except Exception as e:
+        print(f"Error checking/adding embedding column: {e}")
     finally:
         db.close()
