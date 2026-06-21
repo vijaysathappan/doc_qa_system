@@ -2,6 +2,7 @@
 
 Welcome to the **DocMind AI** Project Manual. This document contains the complete system architecture, RAG pipelines, authentication flows, developer guides, environment variable references, and the cloud deployment guide for hosting on Vercel.
 
+Find the Live Demo: https://doc-qa-systems.vercel.app
 ---
 
 ## Table of Contents
