@@ -12,6 +12,13 @@ if DATABASE_URL.startswith("postgres://"):
 
 # SQLite needs check_same_thread=False; PostgreSQL does not
 if DATABASE_URL.startswith("sqlite"):
+    # Ensure directory is writeable, otherwise fall back to temp directory (for serverless environments)
+    db_file_path = DATABASE_URL.replace("sqlite:///", "")
+    db_dir = os.path.dirname(db_file_path) or "."
+    if not os.access(db_dir, os.W_OK):
+        import tempfile
+        DATABASE_URL = f"sqlite:///{os.path.join(tempfile.gettempdir(), 'docqa.db')}"
+
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False}  # required for SQLite + FastAPI
